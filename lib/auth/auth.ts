@@ -16,6 +16,7 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  baseURL: serverEnv.BETTER_AUTH_URL,
   socialProviders: {
     google: {
       clientId: serverEnv.GOOGLE_CLIENT_ID,
