@@ -60,16 +60,29 @@ function Carousel({
 
   const onSelect = React.useCallback((api: CarouselApi) => {
     if (!api) return;
-    setCanScrollPrev(api.canScrollPrev());
-    setCanScrollNext(api.canScrollNext());
+    // In Embla Carousel v9 RC, canScrollPrev and canScrollNext are accessed differently
+    // Use type assertion to access properties that may not be in the type definition
+    const apiAny = api as any;
+    const canPrev = typeof apiAny.canScrollPrev === "function" 
+      ? apiAny.canScrollPrev() 
+      : (apiAny.canScrollPrev ?? false);
+    const canNext = typeof apiAny.canScrollNext === "function"
+      ? apiAny.canScrollNext()
+      : (apiAny.canScrollNext ?? false);
+    setCanScrollPrev(canPrev);
+    setCanScrollNext(canNext);
   }, []);
 
   const scrollPrev = React.useCallback(() => {
-    api?.scrollPrev();
+    if (!api) return;
+    const apiAny = api as any;
+    apiAny.scrollPrev?.();
   }, [api]);
 
   const scrollNext = React.useCallback(() => {
-    api?.scrollNext();
+    if (!api) return;
+    const apiAny = api as any;
+    apiAny.scrollNext?.();
   }, [api]);
 
   const handleKeyDown = React.useCallback(
@@ -92,12 +105,14 @@ function Carousel({
 
   React.useEffect(() => {
     if (!api) return;
+    const apiAny = api as any;
     onSelect(api);
-    api.on("reInit", onSelect);
-    api.on("select", onSelect);
+    apiAny.on?.("reInit", onSelect);
+    apiAny.on?.("select", onSelect);
 
     return () => {
-      api?.off("select", onSelect);
+      apiAny.off?.("select", onSelect);
+      apiAny.off?.("reInit", onSelect);
     };
   }, [api, onSelect]);
 
